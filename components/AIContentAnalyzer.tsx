@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Upload, Camera, Brain, Search, TrendingUp, DollarSign, MapPin, Star, Clock, Tag, Eye, Zap, Crown, Settings, Plus, Filter, BarChart3, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Upload, Camera, Brain, Search, TrendingUp, DollarSign, Settings, Plus, Eye, Zap, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { userLearning } from '@/lib/userLearning';
 
 interface AnalysisItem {
@@ -448,3 +448,384 @@ const AIContentAnalyzer: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   {upload.type === 'video' ? (
                     <Camera className="h-6 w-6 text-purple-600" />
+                  ) : (
+                    <Eye className="h-6 w-6 text-blue-600" />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{upload.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      {upload.analysis.category} • {new Date(upload.uploadedAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-900">
+                    {upload.insights.estimated_project_cost}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {upload.insights.difficulty} • {upload.insights.time_estimate}
+                  </div>
+                </div>
+              </div>
+
+              {upload.analysis.items.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Detected Items</h4>
+                  <div className="space-y-2">
+                    {upload.analysis.items.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span className="text-sm text-gray-900">{item.name}</span>
+                        <div className="text-xs text-gray-500">
+                          {item.quantity} • {Math.round(item.confidence * 100)}% confidence
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {upload.analysis.price_comparison.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Price Comparison</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-2">Store</th>
+                          <th className="text-left py-2">Price</th>
+                          <th className="text-left py-2">Total</th>
+                          <th className="text-left py-2">Availability</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {upload.analysis.price_comparison.map((price, idx) => (
+                          <tr key={idx} className={`${idx === 0 ? 'bg-green-50' : ''}`}>
+                            <td className="py-2 font-medium">{price.store}</td>
+                            <td className="py-2">{price.price} {price.per}</td>
+                            <td className="py-2 font-medium">{price.total}</td>
+                            <td className="py-2">
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                price.availability === 'In Stock' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {price.availability}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {upload.analysis.recommendations.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">AI Recommendations</h4>
+                  <div className="space-y-2">
+                    {upload.analysis.recommendations.map((rec, idx) => (
+                      <div key={idx} className="flex items-start space-x-2">
+                        <Zap className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-gray-700">{rec}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {upload.analysis.project_suggestions.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Project Ideas</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {upload.analysis.project_suggestions.map((project, idx) => (
+                      <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        {project}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Was this analysis helpful?</span>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => {
+                        userLearning.recordFeedback({
+                          uploadId: upload.id,
+                          helpful: true,
+                          category: upload.analysis.category,
+                          timestamp: new Date().toISOString()
+                        });
+                      }}
+                      className="flex items-center space-x-1 px-3 py-1 text-sm text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors"
+                    >
+                      <ThumbsUp className="h-3 w-3" />
+                      <span>Helpful</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        userLearning.recordFeedback({
+                          uploadId: upload.id,
+                          helpful: false,
+                          category: upload.analysis.category,
+                          timestamp: new Date().toISOString()
+                        });
+                      }}
+                      className="flex items-center space-x-1 px-3 py-1 text-sm text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors"
+                    >
+                      <ThumbsDown className="h-3 w-3" />
+                      <span>Not helpful</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {uploads.length === 0 && (
+          <div className="text-center py-12">
+            <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No uploads yet</h3>
+            <p className="text-gray-600 mb-4">Upload your first image or video to get started with AI analysis</p>
+            <button
+              onClick={() => setCurrentView('upload')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Upload Content
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderUpload = () => (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={() => setCurrentView('analysis')}
+          className="text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          ← Back to Analysis
+        </button>
+        <h1 className="text-3xl font-bold text-gray-900">Upload Content</h1>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="mb-6">
+          <label htmlFor="context" className="block text-sm font-medium text-gray-700 mb-2">
+            What are you looking for? (Optional)
+          </label>
+          <textarea
+            id="context"
+            placeholder="e.g., 'I want to build a garden retaining wall', 'Looking for dinner recipe ideas', 'Need to identify this plant', 'Shopping for similar items'..."
+            value={userContext}
+            onChange={(e) => setUserContext(e.target.value)}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Provide context to get more relevant suggestions and recommendations
+          </p>
+        </div>
+
+        <div 
+          className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
+            dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+          }`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <Upload className="mx-auto h-16 w-16 text-gray-400 mb-6" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload Your Content</h2>
+          <p className="text-gray-600 mb-6">
+            Drag and drop your images or videos here, or click to browse files
+          </p>
+          <label className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 cursor-pointer text-lg transition-colors">
+            Choose Files
+            <input 
+              type="file" 
+              className="hidden" 
+              accept="image/*,video/*" 
+              multiple
+              onChange={(e) => {
+                if (e.target.files) {
+                  Array.from(e.target.files).forEach(file => handleFile(file, userContext));
+                }
+              }} 
+            />
+          </label>
+          <p className="text-sm text-gray-500 mt-4">
+            Supports: JPG, PNG, GIF, MP4, MOV, AVI (Max 50MB each)
+          </p>
+        </div>
+
+        <div className="mt-8 p-6 bg-blue-50 rounded-lg">
+          <h3 className="text-lg font-medium text-blue-900 mb-3">What happens after upload?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-start space-x-3">
+              <Brain className="h-6 w-6 text-blue-600 mt-1" />
+              <div>
+                <h4 className="font-medium text-blue-900">AI Analysis</h4>
+                <p className="text-sm text-blue-700">Advanced computer vision identifies objects, context, and meaning in any image</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <Search className="h-6 w-6 text-blue-600 mt-1" />
+              <div>
+                <h4 className="font-medium text-blue-900">Smart Search</h4>
+                <p className="text-sm text-blue-700">Finds relevant information, prices, and sources across the entire web</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <Zap className="h-6 w-6 text-blue-600 mt-1" />
+              <div>
+                <h4 className="font-medium text-blue-900">Personalized Insights</h4>
+                <p className="text-sm text-blue-700">Tailored recommendations based on your context and goals</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h4 className="text-sm font-medium text-gray-900 mb-2">Universal Analysis - Works with Any Content:</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-600">
+            <div>🍳 <strong>Food & Recipes</strong><br/>Identify ingredients, get recipes, find substitutes</div>
+            <div>🏠 <strong>Home & Garden</strong><br/>DIY projects, price comparisons, material guides</div>
+            <div>👕 <strong>Fashion & Style</strong><br/>Find similar items, price check, style suggestions</div>
+            <div>📱 <strong>Electronics</strong><br/>Tech specs, reviews, better deals, accessories</div>
+            <div>🌱 <strong>Plants & Nature</strong><br/>Species identification, care guides, where to buy</div>
+            <div>🎨 <strong>Art & Crafts</strong><br/>Supply lists, tutorials, creative inspiration</div>
+            <div>🚗 <strong>Vehicles & Parts</strong><br/>Part identification, maintenance, upgrades</div>
+            <div>📚 <strong>Books & Learning</strong><br/>Reading recommendations, study resources</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPricing = () => (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-gray-900 text-center">Choose Your Plan</h1>
+      <p className="text-gray-600 text-center max-w-2xl mx-auto">
+        Get smarter insights and better deals with our AI-powered content analysis
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {Object.entries(plans).map(([planKey, plan]) => (
+          <div key={planKey} className={`bg-white rounded-lg shadow-sm border-2 ${user?.plan === planKey ? 'border-blue-500' : 'border-gray-200'} p-6`}>
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
+              <div className="mt-4">
+                <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
+                <span className="text-gray-600">/month</span>
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <div className="flex justify-between mb-4">
+                <span className="text-gray-600">Monthly Uploads</span>
+                <span className="font-medium">{plan.uploads}</span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <h4 className="font-medium text-gray-900 mb-2">Features</h4>
+              <ul className="space-y-1">
+                {plan.features.map(feature => (
+                  <li key={feature} className="text-sm text-gray-600 flex items-center">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-6">
+              <button 
+                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+                  user?.plan === planKey 
+                    ? 'bg-gray-100 text-gray-600 cursor-default' 
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+                disabled={user?.plan === planKey}
+              >
+                {user?.plan === planKey ? 'Current Plan' : 'Upgrade'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center space-x-8">
+              <div className="flex items-center space-x-2">
+                <Brain className="h-8 w-8 text-blue-600" />
+                <span className="text-xl font-bold text-gray-900">AI Analyzer</span>
+              </div>
+              
+              <div className="flex space-x-6">
+                <button
+                  onClick={() => setCurrentView('dashboard')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    currentView === 'dashboard' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => setCurrentView('analysis')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    currentView === 'analysis' || currentView === 'upload' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Content Analysis
+                </button>
+                <button
+                  onClick={() => setCurrentView('upload')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    currentView === 'upload' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Upload
+                </button>
+                <button
+                  onClick={() => setCurrentView('pricing')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    currentView === 'pricing' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Pricing
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">{user?.email || 'user@example.com'}</span>
+              <Settings className="h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {currentView === 'dashboard' && renderDashboard()}
+        {currentView === 'analysis' && renderAnalysis()}
+        {currentView === 'upload' && renderUpload()}
+        {currentView === 'pricing' && renderPricing()}
+      </main>
+    </div>
+  );
+};
+
+export default AIContentAnalyzer;
